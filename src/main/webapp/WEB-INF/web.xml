@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:batch="http://www.springframework.org/schema/batch"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/batch https://www.springframework.org/schema/batch/spring-batch.xsd">
+
+    <bean id="reader" class="org.springframework.batch.item.file.FlatFileItemReader">
+      <!--Defines the input file-->
+      <property name="resource" value="classpath:/flat_file.csv" />
+      <!--Skip header line in input file-->
+      <property name="linesToSkip" value="1" />
+      <property name="lineMapper">
+        <bean class="org.springframework.batch.item.file.mapping.DefaultLineMapper">
+          <property name="lineTokenizer">
+            <!--To split each input line into fields-->
+            <bean class="org.springframework.batch.item.file.transform.DelimitedLineTokenizer">
+              <!--Define the name of each field (used in the batchsample.ProductFieldSetMapper class to retrieve values from the FieldSet)-->
+              <property name="names" value="PRODUCT_ID,NAME,DESCRIPTION,PRICE" />
+            </bean>
+          </property>
+          <property name="fieldSetMapper">
+            <bean class="src.main.java.ProductFieldSetMapper.java" />
+          </property>
+        </bean>
+      </property>
+    </bean>
+
+    <bean id="writer" class="batchsample.ProductJdbcItemWriter">
+      <constructor-arg ref="dataSource" />
+    </bean>
+
+    <batch:job id="importProducts" >
+        <batch:step id="readWriteProducts">
+            <batch:tasklet>
+                <batch:chunk reader="reader" writer="writer" commit-interval="100" />
+            </batch:tasklet>
+        </batch:step>
+    </batch:job>
+</beans>
+
