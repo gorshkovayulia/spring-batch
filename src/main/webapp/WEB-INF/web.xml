@@ -5,6 +5,23 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
                            http://www.springframework.org/schema/batch https://www.springframework.org/schema/batch/spring-batch.xsd">
 
+    <batch:job id="importProducts" >
+        <batch:step id="decompress" next="readWriteProducts">
+            <batch:tasklet ref="decompressTasklet" />
+        </batch:step>
+        <batch:step id="readWriteProducts">
+            <batch:tasklet>
+                <batch:chunk reader="reader" writer="writer" commit-interval="100" />
+            </batch:tasklet>
+        </batch:step>
+    </batch:job>
+
+    <bean id="decompressTasklet" class="batchsample.DecompressTasklet">
+        <property name="inputResource" value="file:./input/input.zip" />
+        <property name="targetDirectory" value="./work/output/" />
+        <property name="targetFile" value="flat_file.csv" />
+    </bean>
+
     <bean id="reader" class="org.springframework.batch.item.file.FlatFileItemReader">
       <!--Defines the input file-->
       <property name="resource" value="classpath:/flat_file.csv" />
@@ -20,7 +37,7 @@
             </bean>
           </property>
           <property name="fieldSetMapper">
-            <bean class="src.main.java.ProductFieldSetMapper.java" />
+            <bean class="batchsample.ProductFieldSetMapper" />
           </property>
         </bean>
       </property>
@@ -30,12 +47,5 @@
       <constructor-arg ref="dataSource" />
     </bean>
 
-    <batch:job id="importProducts" >
-        <batch:step id="readWriteProducts">
-            <batch:tasklet>
-                <batch:chunk reader="reader" writer="writer" commit-interval="100" />
-            </batch:tasklet>
-        </batch:step>
-    </batch:job>
 </beans>
 
