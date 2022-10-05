@@ -6,6 +6,7 @@
                            http://www.springframework.org/schema/batch https://www.springframework.org/schema/batch/spring-batch.xsd">
 
     <batch:job id="importProducts" >
+        <!--'next' attribute controls the job flow-->
         <batch:step id="decompress" next="readWriteProducts">
             <batch:tasklet ref="decompressTasklet" />
         </batch:step>
@@ -16,15 +17,15 @@
         </batch:step>
     </batch:job>
 
-    <bean id="decompressTasklet" class="batchsample.DecompressTasklet">
-        <property name="inputResource" value="file:./input/input.zip" />
-        <property name="targetDirectory" value="./work/output/" />
-        <property name="targetFile" value="flat_file.csv" />
+    <bean id="decompressTasklet" class="batchsample.DecompressTasklet" scope="step">
+        <property name="inputResource" value="#{jobParameters['inputResource']}" />
+        <property name="targetDirectory" value="#{jobParameters['targetDirectory']}" />
+        <property name="targetFile" value="#{jobParameters['targetFile']}" />
     </bean>
 
-    <bean id="reader" class="org.springframework.batch.item.file.FlatFileItemReader">
+    <bean id="reader" class="org.springframework.batch.item.file.FlatFileItemReader" scope="step">
       <!--Defines the input file-->
-      <property name="resource" value="classpath:/flat_file.csv" />
+      <property name="resource" value="file:#{jobParameters['targetDirectory'] jobParameters['targetFile']}" />
       <!--Skip header line in input file-->
       <property name="linesToSkip" value="1" />
       <property name="lineMapper">

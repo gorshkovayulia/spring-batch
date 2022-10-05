@@ -1,9 +1,10 @@
 package batchsample;
 
-import java.util.List;
-import javax.sql.DataSource;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.jdbc.core.JdbcTemplate;
+
+import javax.sql.DataSource;
+import java.util.List;
 
 public class ProductJdbcItemWriter implements ItemWriter<Product> {
 
